@@ -11,13 +11,21 @@ import { DepartmentsetupPage } from '../departmentsetup/departmentsetup';
 import { MileagesetupPage } from '../mileagesetup/mileagesetup';
 import { PaymenttypesetupPage } from '../paymenttypesetup/paymenttypesetup';
 import { QualificationsetupPage } from '../qualificationsetup/qualificationsetup';
-import { SubsciptionsetupPage } from '../subsciptionsetup/subsciptionsetup';
-import { RolesetupPage } from '../rolesetup/rolesetup';
-import { TenantsetupPage } from '../tenantsetup/tenantsetup';
 import { UserPage } from '../user/user';
 import { SocRegistrationPage } from '../soc-registration/soc-registration';
 import { CountrysetupPage } from '../countrysetup/countrysetup';
 import { StatesetupPage } from '../statesetup/statesetup';
+import { ImportExcelDataPage } from '../import-excel-data/import-excel-data';
+import { DeviceSetupPage } from '../device-setup/device-setup';
+import { RolesetupPage } from '../rolesetup/rolesetup';
+import { RolemodulesetupPage } from '../rolemodulesetup/rolemodulesetup';
+import { CustomerSetupPage } from '../customer-setup/customer-setup';
+import { SetupguidePage } from '../setupguide/setupguide';
+import { LoginPage } from '../login/login';
+import { SettingsPage } from '../settings/settings';
+import { CompanysettingsPage } from '../companysettings/companysettings';
+import { DbmaintenancePage } from '../dbmaintenance/dbmaintenance';
+import { ApprovalProfilePage } from '../approval-profile/approval-profile';
 
 import { TenantCompanySetup_Model } from '../../models/tenantcompanysetup_model';
 import { TenantCompanySiteSetup_Model } from '../../models/tenantcompanysitesetup_model';
@@ -25,18 +33,18 @@ import { TenantCompanySetup_Service } from '../../services/tenantcompanysetup_se
 import { TenantCompanySiteSetup_Service } from '../../services/tenantcompanysitesetup_service';
 import { BaseHttpService } from '../../services/base-http';
 
+
+
 import { UUID } from 'angular2-uuid';
 
-import { LoginPage } from '../login/login';
-import {  Inject } from '@angular/core';
-import {  AlertController } from 'ionic-angular';
-import { TranslateService } from '@ngx-translate/core';
 
-import { FormControlDirective, FormBuilder, Validators, FormGroup, FormControl } from '@angular/forms';
-import { Http, Headers, RequestOptions, URLSearchParams } from '@angular/http';
+
+import { FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { Http } from '@angular/http';
 import 'rxjs/add/operator/map';
 
 import * as constants from '../../app/config/constants';
+import { from } from 'rxjs/observable/from';
 
 
 /**
@@ -45,7 +53,6 @@ import * as constants from '../../app/config/constants';
  * See http://ionicframework.com/docs/components/#navigation for more info
  * on Ionic pages and navigation.
  */
-
 
 
 @IonicPage()
@@ -62,7 +69,6 @@ export class SetupPage {
   baseResourceUrl: string = constants.DREAMFACTORY_INSTANCE_URL + '/api/v2/zcs/_table/main_branch' + '?api_key=' + constants.DREAMFACTORY_API_KEY;
   baseResource_Url: string = constants.DREAMFACTORY_INSTANCE_URL + '/api/v2/zcs/_table/';
   public branchs: any; public hqDetails: any;
-
 
   public AddBranchsClicked: boolean = false;
   public EditBranchsClicked: boolean = false;
@@ -82,6 +88,29 @@ export class SetupPage {
   public NAME_ngModel_Edit: any;
   //---------------------------------------------------------------------
 
+  SetupGuideDisplay: boolean = false;
+  TenantCompanyDisplay: boolean = false;
+  BankDisplay: boolean = false;
+  CashcardDisplay: boolean = false;
+  ClaimTypeDisplay: boolean = false;
+  DesignationDisplay: boolean = false;
+  DepartmentDisplay: boolean = false;
+  MileageDisplay: boolean = false;
+  PaymentTypeDisplay: boolean = false;
+  QualificationDisplay: boolean = false;
+  UserDisplay: boolean = false;
+  CustomerDisplay: boolean = false;
+  SocDisplay: boolean = false;
+  CountryDisplay: boolean = false;
+  StateDisplay: boolean = false;
+  DeviceDisplay: boolean = false;
+  ImportDataDisplay: boolean = false;
+  CompanySettingsDisplay: boolean = false;
+  DBMaintenanceDisplay: boolean = false;
+  RoleSetupDisplay: boolean = false;
+  RoleModuleDisplay: boolean = false;
+  ApprovalProfileDisplay: boolean = false;
+
   public AddBranchsClick() {
     this.AddBranchsClicked = true;
     this.ClearControls();
@@ -97,8 +126,7 @@ export class SetupPage {
     }
   }
 
-
-  public EditClick(BRANCH_GUID: any) {
+  public EditClick() {
     // this.ClearControls();
     // this.EditBranchsClicked = true;
     // var self = this;
@@ -110,10 +138,10 @@ export class SetupPage {
     //   });
   }
 
-  public DeleteClick(BRANCH_GUID: any) {
+  public DeleteClick() {
     // let alert = this.alertCtrl.create({
     //   title: 'Remove Confirmation',
-    //   message: 'Do you want to remove ?',
+    //   message: 'Are you sure to remove?',
     //   buttons: [
     //     {
     //       text: 'Cancel',
@@ -139,103 +167,187 @@ export class SetupPage {
     // }); alert.present();
   }
 
-  constructor(public navCtrl: NavController, public navParams: NavParams, fb: FormBuilder, public http: Http, private httpService: BaseHttpService, private TenantCompanySetupService: TenantCompanySetup_Service, private tenantcompanysitesetupservice: TenantCompanySiteSetup_Service, private alertCtrl: AlertController) {
-  
+  submodules: any;
+  constructor(public navCtrl: NavController, public navParams: NavParams, fb: FormBuilder, public http: Http, private TenantCompanySetupService: TenantCompanySetup_Service, private tenantcompanysitesetupservice: TenantCompanySiteSetup_Service) {
     if (localStorage.getItem("g_USER_GUID") != null) {
-      this.baseResourceUrl = constants.DREAMFACTORY_INSTANCE_URL + "/api/v2/zcs/_table/vw_tenantcompanysitedetails?filter=(TENANT_GUID=" + localStorage.getItem("g_TENANT_GUID") + ')&api_key=' + constants.DREAMFACTORY_API_KEY;
-      this.http
-        .get(this.baseResourceUrl)
-        .map(res => res.json())
-        .subscribe(data => {
-          this.branchs = data.resource;
-        });
+      // this.baseResourceUrl = constants.DREAMFACTORY_INSTANCE_URL + "/api/v2/zcs/_table/vw_tenantcompanysitedetails?filter=(TENANT_GUID=" + localStorage.getItem("g_TENANT_GUID") + ')&api_key=' + constants.DREAMFACTORY_API_KEY;
+      // this.http
+      //   .get(this.baseResourceUrl)
+      //   .map(res => res.json())
+      //   .subscribe(data => {
+      //     this.branchs = data.resource;
+      //   });
 
-      this.Branchform = fb.group({
-        COMPANYNAME: [null, Validators.compose([Validators.pattern('^[a-zA-Z0-9][a-zA-Z0-9!@#%$&()-`.+,/\"\\s]+$'), Validators.required])],
-        BRANCHNAME: [null, Validators.compose([Validators.pattern('^[a-zA-Z0-9][a-zA-Z0-9!@#%$&()-`.+,/\"\\s]+$'), Validators.required])],
-        ISHQ_FLAG: ["", Validators.required],
-      });
+      // this.Branchform = fb.group({
+      //   COMPANYNAME: [null, Validators.compose([Validators.pattern('^[a-zA-Z0-9][a-zA-Z0-9!@#%$&()-`.+,/\"\\s]+$'), Validators.required])],
+      //   BRANCHNAME: [null, Validators.compose([Validators.pattern('^[a-zA-Z0-9][a-zA-Z0-9!@#%$&()-`.+,/\"\\s]+$'), Validators.required])],
+      //   ISHQ_FLAG: ["", Validators.required],
+      // });
+      this.SetupGuideDisplay = false;
+      this.TenantCompanyDisplay = false;
+      this.BankDisplay = false;
+      this.CashcardDisplay = false;
+      this.ClaimTypeDisplay = false;
+      this.DesignationDisplay = false;
+      this.DepartmentDisplay = false;
+      this.MileageDisplay = false;
+      this.PaymentTypeDisplay = false;
+      this.QualificationDisplay = false;
+      this.UserDisplay = false;
+      this.CustomerDisplay = false;
+      this.SocDisplay = false;
+      this.CountryDisplay = false;
+      this.StateDisplay = false;
+      this.DeviceDisplay = false;
+      this.ImportDataDisplay = false;
+      this.CompanySettingsDisplay = false;
+      this.DBMaintenanceDisplay = false;
+      this.RoleSetupDisplay = false;
+      this.RoleModuleDisplay = false;
+      this.ApprovalProfileDisplay = false;
+
+      if (localStorage.getItem("g_USER_GUID") == "sva" || localStorage.getItem("g_IS_TENANT_ADMIN") == "1") {
+        this.SetupGuideDisplay = true;
+        this.TenantCompanyDisplay = true;
+        this.BankDisplay = true;
+        this.CashcardDisplay = true;
+        this.ClaimTypeDisplay = true;
+        this.DesignationDisplay = true;
+        this.DepartmentDisplay = true;
+        this.MileageDisplay = true;
+        this.PaymentTypeDisplay = true;
+        this.QualificationDisplay = true;
+        this.UserDisplay = true;
+        this.CustomerDisplay = true;
+        this.SocDisplay = true;
+        this.CountryDisplay = true;
+        this.StateDisplay = true;
+        this.DeviceDisplay = true;
+        this.ImportDataDisplay = true;
+        this.CompanySettingsDisplay = true;
+        this.DBMaintenanceDisplay = true;
+        this.RoleSetupDisplay = true;
+        this.RoleModuleDisplay = true;
+        this.ApprovalProfileDisplay = true;
+      }
+      else {
+        //Get all the setup menu details for that particular role-----------------
+        this.baseResourceUrl = constants.DREAMFACTORY_INSTANCE_URL + "/api/v2/zcs/_table/view_user_role_submenu?filter=(USER_GUID=" + localStorage.getItem("g_USER_GUID") + ')&api_key=' + constants.DREAMFACTORY_API_KEY;
+        this.http
+          .get(this.baseResourceUrl)
+          .map(res => res.json())
+          .subscribe(data => {
+            this.submodules = data.resource;
+            for (var item in data.resource) {
+              if (data.resource[item]["CODE_PAGE_NAME"] == 'SetupguidePage') { this.SetupGuideDisplay = true; }
+              if (data.resource[item]["CODE_PAGE_NAME"] == 'BranchsetupPage') { this.TenantCompanyDisplay = true; }
+              if (data.resource[item]["CODE_PAGE_NAME"] == 'BanksetupPage') { this.BankDisplay = true; }
+              if (data.resource[item]["CODE_PAGE_NAME"] == 'CashcardsetupPage') { this.CashcardDisplay = true; }
+              if (data.resource[item]["CODE_PAGE_NAME"] == 'ClaimtypePage') { this.ClaimTypeDisplay = true; }
+              if (data.resource[item]["CODE_PAGE_NAME"] == 'DesignationsetupPage') { this.DesignationDisplay = true; }
+              if (data.resource[item]["CODE_PAGE_NAME"] == 'DepartmentsetupPage') { this.DepartmentDisplay = true; }
+              if (data.resource[item]["CODE_PAGE_NAME"] == 'MileagesetupPage') { this.MileageDisplay = true; }
+              if (data.resource[item]["CODE_PAGE_NAME"] == 'PaymenttypesetupPage') { this.PaymentTypeDisplay = true; }
+              if (data.resource[item]["CODE_PAGE_NAME"] == 'QualificationsetupPage') { this.QualificationDisplay = true; }
+              if (data.resource[item]["CODE_PAGE_NAME"] == 'UserPage') { this.UserDisplay = true; }
+              if (data.resource[item]["CODE_PAGE_NAME"] == 'SocRegistrationPage') { this.SocDisplay = true; }
+              if (data.resource[item]["CODE_PAGE_NAME"] == 'CountrysetupPage') { this.CountryDisplay = true; }
+              if (data.resource[item]["CODE_PAGE_NAME"] == 'StatesetupPage') { this.StateDisplay = true; }
+              if (data.resource[item]["CODE_PAGE_NAME"] == 'ImportExcelDataPage') { this.ImportDataDisplay = true; }
+              if (data.resource[item]["CODE_PAGE_NAME"] == 'DeviceSetupPage') { this.DeviceDisplay = true; }
+              if (data.resource[item]["CODE_PAGE_NAME"] == 'RolesetupPage') { this.RoleSetupDisplay = true; }
+              if (data.resource[item]["CODE_PAGE_NAME"] == 'RolemodulesetupPage') { this.RoleModuleDisplay = true; }
+              if (data.resource[item]["CODE_PAGE_NAME"] == 'CustomerSetupPage') { this.CustomerDisplay = true; }
+              if (data.resource[item]["CODE_PAGE_NAME"] == 'ApprovalProfilePage') { this.ApprovalProfileDisplay = true; }
+              if (data.resource[item]["CODE_PAGE_NAME"] == 'DbmaintenancePage') { this.DBMaintenanceDisplay = true; }
+              if (data.resource[item]["CODE_PAGE_NAME"] == 'CompanysettingsPage') { this.CompanySettingsDisplay = true; }
+            }
+          });
+        //------------------------------------------------------------------------
+      }
     }
     else {
-      this.navCtrl.push(LoginPage);
+      this.navCtrl.setRoot(LoginPage);
     }
-  
-  
   }
 
-  goToBanksetup(){
+  goToSetupGuide() {
+    this.navCtrl.push(SetupguidePage);
+  }
+
+  goToBanksetup() {
     this.navCtrl.push(BanksetupPage)
   }
 
-
-
-
-  goToBranchsetup(){
+  goToBranchsetup() {
     this.navCtrl.push(BranchsetupPage)
   }
 
-    goToCashcardsetup(){
+  goToCashcardsetup() {
     this.navCtrl.push(CashcardsetupPage)
   }
 
-
-    goToClaimtypesetup(){
+  goToClaimtypesetup() {
     this.navCtrl.push(ClaimtypePage)
   }
 
-  goToUser(){
+  goToUser() {
     this.navCtrl.push(UserPage)
   }
 
-  goToSOC(){
+  goToCustomer() {
+    this.navCtrl.push(CustomerSetupPage);
+  }
+
+  goToSOC() {
     this.navCtrl.push(SocRegistrationPage)
   }
-  
-  goToCompanysetup(){
+
+  goToCompanysetup() {
     this.navCtrl.push(CompanysetupPage)
   }
 
-  goToDesignationsetup(){
+  goToDesignationsetup() {
     this.navCtrl.push(DesignationsetupPage)
   }
 
-  goToDepartmentsetup(){
+  goToDepartmentsetup() {
     this.navCtrl.push(DepartmentsetupPage)
   }
 
- 
-
-      goToPaymenttypesetup(){
+  goToPaymenttypesetup() {
     this.navCtrl.push(PaymenttypesetupPage)
   }
 
-  goToStatesetup(){
+  goToStatesetup() {
     this.navCtrl.push(StatesetupPage)
   }
 
-  
-  goToCountrysetup(){
+  goToCountrysetup() {
     this.navCtrl.push(CountrysetupPage)
   }
 
-      goToQualificationsetup(){
+  goToQualificationsetup() {
     this.navCtrl.push(QualificationsetupPage)
   }
 
- 
-
-      goToMileagesetup(){
+  goToMileagesetup() {
     this.navCtrl.push(MileagesetupPage)
   }
 
+  goToDevicesetup() {
+    this.navCtrl.push(DeviceSetupPage);
+  }
+
+  goToImport_Excel_Data_setup() {
+    this.navCtrl.push(ImportExcelDataPage)
+  }
   ionViewDidLoad() {
     console.log('ionViewDidLoad SetupPage');
   }
 
   Save() {
     if (this.Branchform.valid) {
-  
-
       this.Save_Tenant_Company();
     }
   }
@@ -247,7 +359,7 @@ export class SetupPage {
       .get(this.baseResourceUrl)
       .map(res => res.json())
       .subscribe(data => {
-  
+
         if (data.resource[0] != undefined) {
           this.tenant_company_entry.TENANT_COMPANY_GUID = data.resource[0]["TENANT_COMPANY_GUID"];
           this.Save_Tenant_Company_Site();
@@ -311,7 +423,7 @@ export class SetupPage {
       //-------------Get all the details of previous tenant_company_site------------------------------
       this.baseResourceUrl = constants.DREAMFACTORY_INSTANCE_URL + "/api/v2/zcs/_table/tenant_company_site?filter=(TENANT_COMPANY_SITE_GUID=" + localStorage.getItem("g_TENANT_COMPANY_SITE_GUID") + ')&api_key=' + constants.DREAMFACTORY_API_KEY;
       this.http
-        .get(this.baseResourceUrl)     
+        .get(this.baseResourceUrl)
         .map(res => res.json())
         .subscribe(data => {
           this.hqDetails = data.resource;
@@ -352,7 +464,7 @@ export class SetupPage {
 
   }
 
-  Update(BRANCH_GUID: any) {
+  Update() {
 
   }
 
@@ -361,6 +473,30 @@ export class SetupPage {
     this.COMPANYNAME_ngModel_Add = "";
 
     this.NAME_ngModel_Edit = "";
+  }
+
+  goToSettings() {
+    this.navCtrl.push(SettingsPage);
+  }
+
+  goToCompanySettings() {
+    this.navCtrl.push(CompanysettingsPage);
+  }
+
+  goToDBMaintenance() {
+    this.navCtrl.push(DbmaintenancePage);
+  }
+
+  goToRolesetup() {
+    this.navCtrl.push(RolesetupPage)
+  }
+
+  goToRoleModulesetup() {
+    this.navCtrl.push(RolemodulesetupPage)
+  }
+
+  goToApprovalProfileSetup() {
+    this.navCtrl.push(ApprovalProfilePage);
   }
 
 }

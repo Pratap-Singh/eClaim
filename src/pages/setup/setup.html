@@ -6,142 +6,231 @@
 -->
 <ion-header>
 
-  <ion-navbar>
-    <ion-title><b>Setup</b></ion-title>
+  <ion-navbar color="primary200">
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+
+    <ion-title>
+      <b>{{ "SETUP" | translate }}</b>
+    </ion-title>
   </ion-navbar>
 
 </ion-header>
-
-
-
- <ion-content padding>
-   <ion-card class="round" (click)="goToBanksetup()">
-            <ion-card-header class="icon">
-              <ion-icon name="logo-usd" class="iconf"></ion-icon>
-            </ion-card-header>
-            <ion-card-content class="Subtitle">
-            BANK 
-            </ion-card-content>
-          </ion-card>
-
-
-        <ion-card class="round" (click)="goToCashcardsetup()">
-          <ion-card-header class="icon">
-            <ion-icon name="cash" class="iconf"></ion-icon>
-          </ion-card-header>
-          <ion-card-content class="Subtitle">
-          CASH CARD 
-          </ion-card-content>
-        </ion-card>
-
-
-      <ion-card class="round" (click)="goToClaimtypesetup()">
-        <ion-card-header class="icon">
-          <ion-icon name="list" class="iconf"></ion-icon>
-        </ion-card-header>
-        <ion-card-content class="Subtitle">
-          CLAIM TYPE 
-        </ion-card-content>
-      </ion-card>
-
-  
-
-    <ion-card class="round" (click)="goToDesignationsetup()">
-      <ion-card-header class="icon">
-        <ion-icon name="person" class="iconf"></ion-icon>
-      </ion-card-header>
-      <ion-card-content class="Subtitle">
-      DESIGNATION 
-      </ion-card-content>
-    </ion-card>
-
-  <ion-card class="round" (click)="goToDepartmentsetup()">
+<div class="popup123">
+  <div class="bgpop"></div>
+  <div class="PopUpwarn">
+    <div class="poptext">Sorry, this page cannot be viewed in this screen size. <br>Please use desktop browser to view the
+      page. </div>
+  </div>
+</div>
+<ion-content padding style="background: #eeeeee;">
+  <ion-card class="round1" (click)="goToSetupGuide()" *ngIf="SetupGuideDisplay">
     <ion-card-header class="icon">
-      <ion-icon name="git-pull-request" class="iconf"></ion-icon>
+      <ion-icon name="ios-cog" color="primary500" class="iconf"></ion-icon>
     </ion-card-header>
     <ion-card-content class="Subtitle">
-        DEPARTMENT 
+      {{ "SETUP_GUID" | translate }}
     </ion-card-content>
   </ion-card>
 
-    <ion-card class="round"  (click)="goToMileagesetup()">
+  <ion-card class="round1" (click)="goToBranchsetup()" *ngIf="TenantCompanyDisplay">
     <ion-card-header class="icon">
-      <ion-icon name="grid" class="iconf"></ion-icon>
+      <ion-icon name="ios-briefcase" color="primary500" class="iconf"></ion-icon>
     </ion-card-header>
     <ion-card-content class="Subtitle">
-     MILEAGE 
+      {{ "TENANT_COMPANY" | translate }}
     </ion-card-content>
   </ion-card>
 
-
-    <ion-card class="round"  (click)="goToPaymenttypesetup()">
-      <ion-card-header class="icon">
-              <ion-icon name="list-box" class="iconf"></ion-icon>
-       </ion-card-header>
+  <ion-card class="round1" (click)="goToBanksetup()" *ngIf="BankDisplay">
+    <ion-card-header class="icon">
+      <ion-icon name="logo-usd" color="primary" class="iconf"></ion-icon>
+    </ion-card-header>
     <ion-card-content class="Subtitle">
-     PAYMENT TYPE 
+      {{ "BANK" | translate }} 
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card class="round1" (click)="goToCashcardsetup()" *ngIf="CashcardDisplay">
+    <ion-card-header class="icon">
+      <ion-icon name="cash" color="secondary400" class="iconf"></ion-icon>
+    </ion-card-header>
+    <ion-card-content class="Subtitle">
+      {{ "CASH_CARD" | translate }}
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card class="round1" (click)="goToClaimtypesetup()" *ngIf="ClaimTypeDisplay">
+    <ion-card-header class="icon">
+      <ion-icon name="list" color="primary500" class="iconf"></ion-icon>
+    </ion-card-header>
+    <ion-card-content class="Subtitle">
+      {{ "SETUP_CLAIM_TYPE" | translate }} 
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card class="round1" (click)="goToDesignationsetup()" *ngIf="DesignationDisplay">
+    <ion-card-header class="icon">
+      <ion-icon name="person" color="primary" class="iconf"></ion-icon>
+    </ion-card-header>
+    <ion-card-content class="Subtitle">
+      {{ "SETUP_DESIGNATION" | translate }} 
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card class="round1" (click)="goToDepartmentsetup()" *ngIf="DepartmentDisplay">
+    <ion-card-header class="icon">
+      <ion-icon name="git-pull-request" color="secondary400" class="iconf"></ion-icon>
+    </ion-card-header>
+    <ion-card-content class="Subtitle">
+      {{ "SETUP_DEPARTMENT" | translate }}  
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card class="round1" (click)="goToMileagesetup()" *ngIf="MileageDisplay">
+    <ion-card-header class="icon">
+      <ion-icon name="car" color="secondary400" class="iconf"></ion-icon>
+    </ion-card-header>
+    <ion-card-content class="Subtitle">
+      {{ "SETUP_MILEAGE" | translate }} 
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card class="round1" (click)="goToPaymenttypesetup()" *ngIf="PaymentTypeDisplay">
+    <ion-card-header class="icon">
+      <ion-icon name="list-box" color="primary500" class="iconf"></ion-icon>
+    </ion-card-header>
+    <ion-card-content class="Subtitle">
+      {{ "PAYMENT_TYPE" | translate }} 
 
     </ion-card-content>
   </ion-card>
 
-    <ion-card class="round"  (click)="goToQualificationsetup()" >
+  <ion-card class="round1" (click)="goToQualificationsetup()" *ngIf="QualificationDisplay">
     <ion-card-header class="icon">
-      <ion-icon name="document" class="iconf"></ion-icon>
+      <ion-icon name="medal" color="primary" class="iconf"></ion-icon>
     </ion-card-header>
     <ion-card-content class="Subtitle">
-    QUALIFICATION 
+      {{ "SETUP_QUALIFICATION" | translate }}  
     </ion-card-content>
   </ion-card>
 
-
-
-  <ion-card class="round" (click)="goToUser()">
+  <ion-card class="round1" (click)="goToUser()" *ngIf="UserDisplay">
     <ion-card-header class="icon">
-      <ion-icon name="people" class="iconf"></ion-icon>
+      <ion-icon name="people" color="secondary400" class="iconf"></ion-icon>
     </ion-card-header>
     <ion-card-content class="Subtitle">
-     USER 
+      {{ "USER_REGISTRATION" | translate }} 
     </ion-card-content>
   </ion-card>
 
-  
-  <ion-card class="round" (click)="goToSOC()">
+  <ion-card class="round1" (click)="goToCustomer()" *ngIf="CustomerDisplay">
     <ion-card-header class="icon">
-      <ion-icon name="md-clipboard" class="iconf"></ion-icon>
+      <ion-icon name="man" color="primary500" class="iconf"></ion-icon>
     </ion-card-header>
     <ion-card-content class="Subtitle">
-     SOC/PROJECT 
+      {{ "SETUP_CUSTOMER_REGISTRATION" | translate }}  
     </ion-card-content>
   </ion-card>
 
-  <ion-card class="round"  (click)="goToBranchsetup()">
+  <ion-card class="round1" (click)="goToSOC()" *ngIf="SocDisplay">
     <ion-card-header class="icon">
-      <ion-icon name="ios-briefcase" class="iconf"></ion-icon>
+      <ion-icon name="md-clipboard" color="primary" class="iconf"></ion-icon>
     </ion-card-header>
     <ion-card-content class="Subtitle">
-     TENANT COMPANY & SITE 
+      {{ "S_SETUP_GUID" | translate }} 
     </ion-card-content>
-    </ion-card>
+  </ion-card>
 
-    <ion-card class="round"  (click)="goToCountrysetup()">
-        <ion-card-header class="icon">
-          <ion-icon name="ios-pin" class="iconf"></ion-icon>
-        </ion-card-header>
-        <ion-card-content class="Subtitle">
-        COUNTRY
-        </ion-card-content>
-      </ion-card>
+  <ion-card class="round1" (click)="goToCountrysetup()" *ngIf="CountryDisplay">
+    <ion-card-header class="icon">
+      <ion-icon name="ios-pin" color="primary500" class="iconf"></ion-icon>
+    </ion-card-header>
+    <ion-card-content class="Subtitle">
+      {{ "SETUP_COUNTRY" | translate }}  
+    </ion-card-content>
+  </ion-card>
 
-        
+  <ion-card class="round1" (click)="goToStatesetup()" *ngIf="StateDisplay">
+    <ion-card-header class="icon">
+      <ion-icon name="ios-pin-outline" color="primary" class="iconf"></ion-icon>
+    </ion-card-header>
+    <ion-card-content class="Subtitle">
+      {{ "SETUP_STATE" | translate }}  
+    </ion-card-content>
+  </ion-card>
 
-        <ion-card class="round"  (click)="goToStatesetup()">
-            <ion-card-header class="icon">
-              <ion-icon name="ios-pin-outline" class="iconf"></ion-icon>
-            </ion-card-header>
-            <ion-card-content class="Subtitle">
-             STATE
-            </ion-card-content>
-        </ion-card>
+  <ion-card class="round1" (click)="goToDevicesetup()" *ngIf="DeviceDisplay">
+    <ion-card-header class="icon">
+      <ion-icon name="ios-finger-print-outline" color="primary500" class="iconf"></ion-icon>
+    </ion-card-header>
+    <ion-card-content class="Subtitle">
+      {{ "ATTENDANCE" | translate }}  
+    </ion-card-content>
+  </ion-card>
 
+  <ion-card class="round1" (click)="goToImport_Excel_Data_setup()" *ngIf="ImportDataDisplay">
+    <ion-card-header class="icon">
+      <ion-icon name="ios-stats-outline" color="primary" class="iconf"></ion-icon>
+    </ion-card-header>
+    <ion-card-content class="Subtitle">
+      {{ "SETUP_IMPORT_DATA" | translate }}  
+    </ion-card-content>
+  </ion-card>
+
+  <!-- <ion-card class="round1" (click)="goToSettings()" style="display:none;">
+    <ion-card-header class="icon">
+      <ion-icon name="settings" color="primary500" class="iconf"></ion-icon>
+    </ion-card-header>
+    <ion-card-content class="Subtitle">
+      {{ "SETUP_SETTING" | translate }}  
+    </ion-card-content>
+  </ion-card> -->
+
+  <ion-card class="round1" (click)="goToCompanySettings()" *ngIf="CompanySettingsDisplay">
+    <ion-card-header class="icon">
+      <ion-icon name="settings" color="primary500" class="iconf"></ion-icon>
+    </ion-card-header>
+    <ion-card-content class="Subtitle">
+      {{ "COMPANY_SETTING" | translate }} 
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card class="round1" (click)="goToDBMaintenance()" *ngIf="DBMaintenanceDisplay">
+    <ion-card-header class="icon">
+      <ion-icon name="cloud-download" color="primary500" class="iconf"></ion-icon>
+    </ion-card-header>
+    <ion-card-content class="Subtitle">
+      {{ "DB_MAINTENANCE" | translate }}  
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card class="round1" (click)="goToRolesetup()" *ngIf="RoleSetupDisplay">
+    <ion-card-header class="icon">
+      <ion-icon name="git-network" color="primary" class="iconf"></ion-icon>
+    </ion-card-header>
+    <ion-card-content class="Subtitle">
+      Role Setup
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card class="round1" (click)="goToRoleModulesetup()" *ngIf="RoleModuleDisplay">
+    <ion-card-header class="icon">
+      <ion-icon name="ios-git-network" color="secondary400" class="iconf"></ion-icon>
+    </ion-card-header>
+    <ion-card-content class="Subtitle">
+      Role Module Setup
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card class="round1" (click)="goToApprovalProfileSetup()" *ngIf="ApprovalProfileDisplay">
+    <ion-card-header class="icon">
+      <ion-icon name="basket" color="primary500" class="iconf"></ion-icon>
+    </ion-card-header>
+    <ion-card-content class="Subtitle">
+      Approval Profile
+    </ion-card-content>
+  </ion-card>
 
 </ion-content>

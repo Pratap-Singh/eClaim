@@ -1,15 +1,14 @@
 import { Component } from '@angular/core';
 import { IonicPage, NavController, NavParams } from 'ionic-angular';
 import { TranslateService } from '@ngx-translate/core';
-import { Platform } from 'ionic-angular';
-import { Http, Headers, RequestOptions, URLSearchParams } from '@angular/http';
+import { Http } from '@angular/http';
 import { Services } from '../Services';
-import * as constants from '../../config/constants';
-import { ClaimWorkFlowHistory_Model } from '../../models/ClaimWorkFlowHistory_Model';
-import {TravelclaimPage} from '../../pages/travelclaim/travelclaim';
-import {MedicalclaimPage} from '../../pages/medicalclaim/medicalclaim';
-import {PrintclaimPage} from '../../pages/printclaim/printclaim';
-import { UUID } from 'angular2-uuid';
+import { PrintclaimPage } from '../printclaim/printclaim';
+import { ApiManagerProvider } from '../../providers/api-manager.provider';
+import { ProfileManagerProvider } from '../../providers/profile-manager.provider';
+import * as Settings from '../../dbSettings/companySettings'; 
+
+
 
 @IonicPage()
 @Component({
@@ -17,212 +16,103 @@ import { UUID } from 'angular2-uuid';
   templateUrl: 'print-claim-view.html',
 })
 export class PrintClaimViewPage {
-  totalClaimAmount:number=0;
+  totalClaimAmount: number = 0;
+  remarks: any;
   claimRequestData: any[];
   Remarks_NgModel: any;
   ToggleNgModel: any;
   claimRequestGUID: any;
   Approver_GUID: any;
+  isApprover: any;
+  currency = localStorage.getItem("cs_default_currency")
 
-  constructor(public api: Services, public http: Http, platform: Platform, public translate: TranslateService, public navCtrl: NavController, public navParams: NavParams) {
-    this.translateToEnglish();
-    this.translate.setDefaultLang('en'); //Fallback language
+  level: any;
+  isRemarksAccepted: boolean = false;
+  // approverDesignation: any;
+  isActionTaken: boolean = false;
 
-    platform.ready().then(() => {
-    }); 
+  constructor(public profileMngProvider: ProfileManagerProvider, public api: ApiManagerProvider, public api1: Services, public http: Http, public translate: TranslateService, public navCtrl: NavController, public navParams: NavParams) {
+    this.isApprover = this.navParams.get("isApprover");
     this.claimRequestGUID = this.navParams.get("cr_GUID");
     this.Approver_GUID = this.navParams.get("approver_GUID");
-    // this.userGUID = localStorage.getItem('g_USER_GUID');
-    // this.level = localStorage.getItem('level_no');
+    this.level = navParams.get('level_no');
+    // this.approverDesignation = this.navParams.get("approverDesignation");
 
     this.LoadMainClaim();
   }
 
-  isAccepted(event: any) {
-    if (event.checked) {
-      this.ToggleNgModel = true
+  travelDate: any;
+  isAccepted(val: string) {
+    this.isActionTaken = true;
+    this.isRemarksAccepted = val === 'accepted' ? true : false;
+    if (this.claimRequestGUID !== undefined || this.claimRequestGUID !== null) {
+      this.api.getApiModel('claim_work_flow_history', 'filter=(CLAIM_REQUEST_GUID=' + this.claimRequestGUID + ')AND(STATUS="Rejected")')
+        .subscribe(data => {
+          if (data["resource"].length <= 0)
+            if (this.api.isClaimExpired(this.travelDate, true)) { return; }
+          if (!this.isRemarksAccepted) {
+            if (this.Remarks_NgModel === undefined) {
+              alert('Please enter valid remarks');
+              this.isActionTaken = false;
+              return;
+            }
+          }
+          this.profileMngProvider.ProcessProfileMng(this.Remarks_NgModel, this.Approver_GUID, this.level, this.claimRequestGUID, this.isRemarksAccepted, 1);
+        })
     }
   }
 
-  emailUrl: string = 'http://api.zen.com.my/api/v2/emailnotificationtest?api_key=' + constants.DREAMFACTORY_API_KEY;
+  isImage: boolean = false;
+  LoadMainClaim() {
+    this.api.getApiModel('view_claim_request', 'filter=CLAIM_REQUEST_GUID=' + this.claimRequestGUID).subscribe(res => {
+      this.claimRequestData = res['resource'];
+      this.claimRequestData.forEach(element => {
+        // element.TRAVEL_DATE = new Date(element.TRAVEL_DATE.replace(/-/g, "/"))
+        this.travelDate = element.TRAVEL_DATE = new Date(element.TRAVEL_DATE.replace(/-/g, "/"))
+        element.CREATION_TS = new Date(element.CREATION_TS.replace(/-/g, "/"))
 
-  sendEmail() {
-    let name: string; let email: string
-    name = 'shabbeer'; email = 'shabbeer@zen.com.my'
-    var queryHeaders = new Headers();
-    queryHeaders.append('Content-Type', 'application/json');
-    queryHeaders.append('X-Dreamfactory-Session-Token', localStorage.getItem('session_token'));
-    queryHeaders.append('X-Dreamfactory-API-Key', constants.DREAMFACTORY_API_KEY);
-    let options = new RequestOptions({ headers: queryHeaders });
+        if (element.PROFILE_LEVEL == Settings.ProfileLevels.ONE && element.STATUS == Settings.StatusConstants.PENDING)
+        element.STATUS = Settings.StatusConstants.PENDINGSUPERIOR
+        else if (element.PROFILE_LEVEL == Settings.ProfileLevels.TWO && element.STATUS == Settings.StatusConstants.PENDING)
+        element.STATUS = Settings.StatusConstants.PENDINGFINANCEVALIDATION
+        else if (element.PROFILE_LEVEL == Settings.ProfileLevels.THREE && element.STATUS == Settings.StatusConstants.APPROVED)
+        element.STATUS = Settings.StatusConstants.PENDINGPAYMENT
+        else if (element.PROFILE_LEVEL == Settings.ProfileLevels.ZERO && element.PREVIOUS_LEVEL == Settings.ProfileLevels.ONE && element.STATUS == Settings.StatusConstants.REJECTED)
+        element.STATUS = Settings.StatusConstants.SUPERIORREJECTED
+        else if (element.PROFILE_LEVEL == Settings.ProfileLevels.ZERO && element.PREVIOUS_LEVEL == Settings.ProfileLevels.TWO && element.STATUS == Settings.StatusConstants.REJECTED)
+        element.STATUS = Settings.StatusConstants.FINANCEREJECTED
+        else if (element.PROFILE_LEVEL == Settings.ProfileLevels.ZERO && element.PREVIOUS_LEVEL == Settings.ProfileLevels.THREE && element.STATUS == Settings.StatusConstants.REJECTED)
+        element.STATUS = Settings.StatusConstants.PAYMENTREJECTED 
 
-    let body = {
-      "template": "",
-      "template_id": 0,
-      "to": [
-        {
-          "name": name,
-          "email": email
+        if (element.ATTACHMENT_ID !== null) {
+          this.imageURL = this.api.getImageUrl(element.ATTACHMENT_ID);
         }
-      ],
-      "cc": [
-        {
-          "name": name,
-          "email": email
-        }
-      ],
-      "bcc": [
-        {
-          "name": name,
-          "email": email
-        }
-      ],
-      "subject": "Test",
-      "body_text": "",
-      "body_html": '<HTML><HEAD> <META name=GENERATOR content="MSHTML 10.00.9200.17606"></HEAD> <BODY> <DIV style="FONT-FAMILY: Century Gothic"> <DIV style="MIN-WIDTH: 500px"><BR> <DIV style="PADDING-BOTTOM: 10px; TEXT-ALIGN: center; PADDING-TOP: 10px; PADDING-LEFT: 10px; PADDING-RIGHT: 10px"><IMG style="WIDTH: 130px" alt=zen2.png src="http://zentranet.zen.com.my/_catalogs/masterpage/Layout/images/zen2.png"></DIV> <DIV style="MARGIN: 0px 100px; BACKGROUND-COLOR: #ec008c"> <DIV style="FONT-SIZE: 30px; COLOR: white; PADDING-BOTTOM: 10px; TEXT-ALIGN: center; PADDING-TOP: 10px; PADDING-LEFT: 20px; PADDING-RIGHT: 20px"><B><I>Notification</I></B></DIV></DIV><BR> <DIV style="FONT-SIZE: 12px; TEXT-ALIGN: center; PADDING-TOP: 20px">Dear [%Variable: @Employee%]<BR><BR>Your&nbsp;[%Variable: @LeaveType%] application has been forwarded to your superior for approval.  <H1 style="FONT-SIZE: 14px; TEXT-ALIGN: center; PADDING-TOP: 10px"><BR><B>Leave Details :</B><BR></H1> <TABLE style="FONT-SIZE: 12px; FONT-FAMILY: Century Gothic; MARGIN: 0px auto"> <TBODY> <TR> <TD style="TEXT-ALIGN: left">EMPLOYEE</TD> <TD style="PADDING-BOTTOM: 6px; PADDING-TOP: 6px; PADDING-LEFT: 6px; PADDING-RIGHT: 6px">:</TD> <TD colSpan=2>[%Variable: @Employee%]</TD></TR> <TR> <TD>START DATE</TD> <TD>:</TD> <TD style="TEXT-ALIGN: left" colSpan=2>[%Variable: @StartDate%]</TD></TR> <TR> <TD style="TEXT-ALIGN: left">END DATE </TD> <TD>:</TD> <TD style="TEXT-ALIGN: left" colSpan=2>[%Variable: @EndDate%]</TD></TR> <TR> <TD style="TEXT-ALIGN: left">APPLIED DATE</TD> <TD style="PADDING-BOTTOM: 6px; PADDING-TOP: 6px; PADDING-LEFT: 6px; PADDING-RIGHT: 6px">:</TD> <TD colSpan=2>[%Variable: @AppliedDate%]</TD></TR> <TR> <TD style="TEXT-ALIGN: left">DAYS</TD> <TD>:</TD> <TD style="TEXT-ALIGN: left">[%Variable: @NoOfDays%] </TD> <TD style="TEXT-ALIGN: left">[%Variable: @HalfDay%]</TD></TR></TR> <TR> <TD>LEAVE TYPE</TD> <TD>:</TD> <TD style="TEXT-ALIGN: left" colSpan=2>[%Variable: @LeaveType%]</TD></TR> <TR> <TD style="TEXT-ALIG: left">REASON</TD> <TD>: </TD> <TD style="TEXT-ALIGN: left" colSpan=2>[%Current Item:Reason%]</TD></TR></TBODY></TABLE><BR> <DIV style="TEXT-ALIGN: center; PADDING-TOP: 20px">Thank you.</DIV></DIV></DIV></DIV></BODY></HTML>',
-      "from_name": "Ajay DAV",
-      "from_email": "ajay1591ani@gmail.com",
-      "reply_to_name": "",
-      "reply_to_email": ""
-    };
-    this.http.post(this.emailUrl, body, options)
-      .map(res => res.json())
-      .subscribe(data => {
-        // this.result= data["resource"];
-        alert(JSON.stringify(data));
+        this.totalClaimAmount = element.MILEAGE_AMOUNT;
+        this.remarks = element.REMARKS;
       });
-  }
-
-
-  SubmitAction() {
-    if (this.ToggleNgModel) {
-      // || this.Remarks_NgModel.toString().length < 25
-      let claimHistoryRef: ClaimWorkFlowHistory_Model = new ClaimWorkFlowHistory_Model();
-      claimHistoryRef.CLAIM_WFH_GUID = UUID.UUID();
-      claimHistoryRef.CLAIM_REQUEST_GUID = this.claimRequestGUID;
-      claimHistoryRef.REMARKS = this.Remarks_NgModel;
-      claimHistoryRef.STATUS = 'Pending';
-      claimHistoryRef.USER_GUID = this.Approver_GUID;
-      console.table(claimHistoryRef);     
-      this.api.postData('claim_work_flow_history', claimHistoryRef.toJson(true)).subscribe((response) => {
-        var postClaimMain = response.json();
-        this.sendEmail();
-        // this.ClaimRequestMain = postClaimMain["resource"][0].CLAIM_REQUEST_GUID;
-        // this.MainClaimSaved = true;
-        alert('History Saved.')
-      })
-
-    }
-    else {
-      if (this.Remarks_NgModel === undefined) {
-        alert('Please input valid Remarks');
-      }
-      let claimHistoryRef: ClaimWorkFlowHistory_Model = new ClaimWorkFlowHistory_Model();
-      claimHistoryRef.CLAIM_WFH_GUID = UUID.UUID();
-      claimHistoryRef.CLAIM_REQUEST_GUID = this.claimRequestGUID;
-      claimHistoryRef.REMARKS = this.Remarks_NgModel;
-      claimHistoryRef.STATUS = 'Pending';
-      claimHistoryRef.USER_GUID = this.Approver_GUID;
-      console.table(claimHistoryRef)
-      this.api.postData('claim_work_flow_history', claimHistoryRef.toJson(true)).subscribe((response) => {
-        var postClaimMain = response.json();
-        this.sendEmail();
-        // this.ClaimRequestMain = postClaimMain["resource"][0].CLAIM_REQUEST_GUID;
-        // this.MainClaimSaved = true;
-        alert('History Saved.')
-      })
-    }
-  }
-
-  LoadMainClaim() {    
-    console.log(Services.getUrl('view_claim_request', 'filter=CLAIM_REQUEST_GUID=' + this.claimRequestGUID))
-    this.http
-      .get(Services.getUrl('view_claim_request', 'filter=CLAIM_REQUEST_GUID=' + this.claimRequestGUID))
-      .map(res => res.json())
-      .subscribe(data => {
-        this.claimRequestData = data["resource"];
-        this.claimRequestData.forEach(element => {
-          this.totalClaimAmount = element.MILEAGE_AMOUNT;
-          console.log(this.totalClaimAmount)
-        }); 
-        //this.totalClaimAmount += this.tollParkAmount ;
-      }
-      );
+    })
   }
 
   EditClaim() {
-    // this.navCtrl.push(TravelclaimPage, {
-      // this.navCtrl.push(EntertainmentclaimPage, {
-        // this.navCtrl.push(MedicalclaimPage, {
-          this.navCtrl.push(PrintclaimPage, {
+    this.navCtrl.push(PrintclaimPage, {
       isFormEdit: 'true',
-      //cr_GUID: '2253e352-2c87-81fa-8cba-a4fddf0189f3'
       cr_GUID: this.claimRequestGUID
     });
   }
 
-   //---------------------Language module start---------------------//
-   public translateToMalayClicked: boolean = false;
-   public translateToEnglishClicked: boolean = true;
- 
-   public translateToEnglish() {
-     this.translate.use('en');
-     this.translateToMalayClicked = !this.translateToMalayClicked;
-     this.translateToEnglishClicked = !this.translateToEnglishClicked;
-   }
- 
-   public translateToMalay() {
-     this.translate.use('ms');
-     this.translateToEnglishClicked = !this.translateToEnglishClicked;
-     this.translateToMalayClicked = !this.translateToMalayClicked;
-   }
-   //---------------------Language module end---------------------//
-
-   profileJSON: any; profileLevel: any; assignedTo: any; stage: any; userGUID: any; level: any;
-   readProfile() {
-     return this.http.get('assets/profile.json').map((response) => response.json()).subscribe(data => {
-       this.profileJSON = JSON.stringify(data);
-       // console.log(data)
-       let levels: any[] = data.profile.levels.level
-       levels.forEach(element => {
-         if (element['-id'] == this.level) {
-           this.profileLevel = this.level;
-           if (element['approver']['-directManager'] === '1') {
- 
-             this.http
-               .get(Services.getUrl('user_info', 'filter=USER_GUID=' + this.userGUID))
-               .map(res => res.json())
-               .subscribe(data => {
-                 let userInfo: any[] = data["resource"]
-                 userInfo.forEach(userElm => {
-                   this.assignedTo = userElm.MANAGER_USER_GUID
- 
-                   this.http
-                     .get(Services.getUrl('user_info', 'filter=USER_GUID=' + userElm.MANAGER_USER_GUID))
-                     .map(res => res.json())
-                     .subscribe(data => {
-                       let userInfo: any[] = data["resource"]
-                       userInfo.forEach(approverElm => {
-                         this.stage = approverElm.DEPT_GUID
-                       });
-                     });
- 
-                 });
-               });
-             // console.log('Direct Manager ' + element['approver']['-directManager'])
-             let varf:any[] =  element['conditions']['condition']
-             varf.forEach(condElement => {
-               if (condElement['-status'] === 'approved') {
-                 console.log('Next Level ' + condElement['nextlevel']['#text'])
-               }
-               console.log('Status ' + condElement['-status'])
-             });
-           }
-           
-         }
- 
- 
-       });
-     });
-   }
+  displayImage: any
+  CloseDisplayImage() {
+    this.displayImage = false;
+  }
+  imageURL: string;
+  // DisplayImage(val: any) {
+  //   this.displayImage = true;
+  //   this.imageURL = val;
+  //   if (val !== null) { 
+  //     this.imageURL = this.api.getImageUrl(val); 
+  //     this.displayImage = true; 
+  //     this.isImage = this.api.isFileImage(val); 
+  //   }
+  // }
 
 }

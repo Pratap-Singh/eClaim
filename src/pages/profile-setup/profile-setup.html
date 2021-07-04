@@ -1,13 +1,8 @@
-<!--
-  Generated template for the BanksetupPage page.
 
-  See http://ionicframework.com/docs/components/#navigation for more info on
-  Ionic pages and navigation.
--->
 <ion-header>
 
-  <ion-navbar>
-    <ion-title>Profile Setup</ion-title>
+  <ion-navbar color="primary200">
+    <ion-title>{{ "PROFILE_SETUP" | translate }}</ion-title>
   </ion-navbar>
 
 </ion-header>
@@ -29,12 +24,12 @@
           <th class="lgl1 tblBrLeft" style="width:60px">No.</th>
           <th class="lgl1">Profile Name</th>
           <th class="lgl1">XML</th>
-          <th class="lgl1 tblBrRight" style="width:90px">Action</th>
+          <th class="lgl1 tblBrRight" style="width:105px">Action</th>
 
         </tr>
 
-        <tr class="col7" *ngFor="let profile of profiles; let i=index">
-          <td class="lgl1">{{i+1}}</td>
+        <tr class="col7" *ngFor="let profile of profiles | paginate:{itemsPerPage: 10, currentPage:page, id: 'i' }; let i=index">
+          <td class="lgl1">{{ 10 * (page - 1) + i+1 }}</td>
           <td class="lgl1">{{profile.PROFILE_NAME}}</td>
           <td class="lgl1">{{profile.PROFILE_XML}}</td>
           <td class="lgl1 fColor">
@@ -49,6 +44,8 @@
 
 
       </table>
+      <pagination-controls style=" text-align: center;" (pageChange)="page=$event" id="i" maxSize="10" directionLinks="true" autoHide="true">
+      </pagination-controls>
     </ion-item>
   </ion-list>
   <!--Display Grid End-->
@@ -63,7 +60,7 @@
     <ion-card>
       <ion-card-header class="icTitle headerColor-white ">
 
-        <div class="icHeaderText">REGISTER NEW PROFILE</div>
+        <div class="icHeaderText">{{ "REGISTER_NEW_PROFILE" | translate }}</div>
         <button class="btnR" (click)="CloseProfilesClick()">
           <ion-icon name="md-close"></ion-icon>
         </button>
@@ -72,11 +69,11 @@
       <ion-list>
         <form [formGroup]="Profileform">
           <ion-item>
-            <ion-label stacked>{{"Profile Name"}}</ion-label>
+            <ion-label stacked>{{ "PROFILE_NAME" | translate }}</ion-label>
             <ion-input type="text" formControlName="PROFILE_NAME" [(ngModel)]="PROFILENAME_ngModel_Add" placeholder="{{'Please fill in the profile name'}}"></ion-input>
           </ion-item>
           <ion-item>
-            <ion-label stacked>{{"XML"}}</ion-label>
+            <ion-label stacked>{{ "XML" | translate }}</ion-label>
             <ion-textarea type="text" rows="10" formControlName="PROFILE_XML" [(ngModel)]="XML_ngModel_Add" placeholder="{{'Please fill in the XML'}}"></ion-textarea>
           </ion-item>
           <div class="btn">
@@ -107,11 +104,11 @@
       <ion-list>
         <form [formGroup]="Profileform">
           <ion-item>
-            <ion-label stacked>{{"Profile Name"}}</ion-label>
+            <ion-label stacked>{{ "PROFILE_NAME" | translate }}</ion-label>
             <ion-input type="text" formControlName="PROFILE_NAME" [(ngModel)]="PROFILENAME_ngModel_Edit" placeholder="{{'Please fill in the profile name'}}"></ion-input>
           </ion-item>
           <ion-item>
-            <ion-label stacked>{{"XML"}}</ion-label>
+            <ion-label stacked>{{ "XML" | translate }}</ion-label>
             <ion-textarea type="text" rows="10" formControlName="PROFILE_XML" [(ngModel)]="XML_ngModel_Edit" placeholder="{{'Please fill in the XML'}}"></ion-textarea>
           </ion-item>
           <div class="btn">

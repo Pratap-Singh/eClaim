@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Http, Headers, RequestOptions, URLSearchParams } from '@angular/http';
+import { Headers, RequestOptions, URLSearchParams } from '@angular/http';
 
 import * as constants from '../app/config/constants';
 //import {EntertainmentClaim_Model} from '../models/entertainment_model';
@@ -7,12 +7,12 @@ import { UserInfo_Model } from '../models/usersetup_info_model';
 import { UserMain_Model } from '../models/user_main_model';
 import { UserContact_Model } from '../models/user_contact_model';
 import { UserCompany_Model } from '../models/user_company_model';
+import { UserRole_Model } from '../models/user_role_model';
 import { UserAddress_Model } from '../models/usersetup_address_model';
 import { UserQualification_Model } from '../models/user_qualification_model';
 import { UserCertification_Model } from '../models/user_certification_model';
 import { UserSpouse_Model } from '../models/user_spouse_model';
 import { UserChildren_Model } from '../models/user_children_model';
-import { ViewUser_Model } from '../models/viewuser_model';
 import { BaseHttpService } from './base-http';
 
 import 'rxjs/add/operator/map';
@@ -20,13 +20,6 @@ import 'rxjs/add/operator/catch';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/throw';
 
-import { NavController } from 'ionic-angular';
-
-class ServerResponse {
-	constructor(public resource: any) {
-
-	}
-};
 
 @Injectable()
 
@@ -50,6 +43,7 @@ export class UserSetup_Service {
 	baseResource_Url: string = constants.DREAMFACTORY_INSTANCE_URL + '/api/v2/zcs/_table/';
 
 	baseResourceUrl5: string = constants.DREAMFACTORY_INSTANCE_URL + '/api/v2/zcs/_table/user_qualification';
+	baseResourceUrl6: string = constants.DREAMFACTORY_INSTANCE_URL + '/api/v2/zcs/_table/user_role';
 
 	baseResourceView: string = constants.DREAMFACTORY_INSTANCE_URL + '/api/v2/zcs/_table/view_user_display';
 	baseResourceView_Url: string = constants.DREAMFACTORY_INSTANCE_URL + '/api/v2/zcs/_table/';
@@ -60,7 +54,7 @@ export class UserSetup_Service {
 
 	public USER_GUID: any;
 
-	constructor(private httpService: BaseHttpService, private nav: NavController) { };
+	constructor(private httpService: BaseHttpService) { };
 
 	private handleError(error: any) {
 		let errMsg = (error.message) ? error.message :
@@ -78,16 +72,13 @@ export class UserSetup_Service {
 		queryHeaders.append('X-Dreamfactory-API-Key', constants.DREAMFACTORY_API_KEY);
 		return this.httpService.http
 			.get(this.baseResourceUrl, { search: params, headers: queryHeaders })
-			.map((response) => {
-				var result: any = response.json();
-				let banks: Array<UserInfo_Model> = [];
-
-				// result.resource.forEach((bank) => {
-				// 	banks.push(BankSetup_Model.fromJson(bank));
-				// });  
-				return banks;
-
-			}).catch(this.handleError);
+			.map(() => {
+					let banks: Array<UserInfo_Model> = [];
+					// result.resource.forEach((bank) => {
+					// 	banks.push(BankSetup_Model.fromJson(bank));
+					// });  
+					return banks;
+				}).catch(this.handleError);
 	};
 
 	save_user_info(user_info: UserInfo_Model): Observable<any> {
@@ -133,6 +124,18 @@ export class UserSetup_Service {
 		queryHeaders.append('X-Dreamfactory-API-Key', constants.DREAMFACTORY_API_KEY);
 		let options = new RequestOptions({ headers: queryHeaders });
 		return this.httpService.http.post(this.baseResourceUrl4, user_company.toJson(true), options)
+			.map((response) => {
+				return response;
+			});
+	}
+
+	save_user_role(user_role: UserRole_Model): Observable<any> {
+		var queryHeaders = new Headers();
+		queryHeaders.append('Content-Type', 'application/json');
+		//queryHeaders.append('X-Dreamfactory-Session-Token', localStorage.getItem('session_token'));
+		queryHeaders.append('X-Dreamfactory-API-Key', constants.DREAMFACTORY_API_KEY);
+		let options = new RequestOptions({ headers: queryHeaders });
+		return this.httpService.http.post(this.baseResourceUrl6, user_role.toJson(true), options)
 			.map((response) => {
 				return response;
 			});
@@ -197,7 +200,6 @@ export class UserSetup_Service {
 				return response;
 			});
 	}
-
 
 	//Edit	
 	update_user_main(user_main: UserMain_Model): Observable<any> {
@@ -265,6 +267,18 @@ export class UserSetup_Service {
 			});
 	}
 
+	update_user_role(user_role: UserRole_Model): Observable<any> {
+		var queryHeaders = new Headers();
+		queryHeaders.append('Content-Type', 'application/json');
+		//queryHeaders.append('X-Dreamfactory-Session-Token', localStorage.getItem('session_token'));
+		queryHeaders.append('X-Dreamfactory-API-Key', constants.DREAMFACTORY_API_KEY);
+		let options = new RequestOptions({ headers: queryHeaders });
+		return this.httpService.http.patch(this.baseResourceUrl6, user_role.toJson(true), options)
+			.map((response) => {
+				return response;
+			});
+	}
+
 	update_user_qualification(user_qualification: UserQualification_Model): Observable<any> {
 		var queryHeaders = new Headers();
 		queryHeaders.append('Content-Type', 'application/json');
@@ -277,9 +291,6 @@ export class UserSetup_Service {
 				return response;
 			});
 	}
-
-
-
 
 	get(id: string, params?: URLSearchParams): Observable<UserAddress_Model> {
 		alert('stating of service');
@@ -335,19 +346,34 @@ export class UserSetup_Service {
 		// 		return response;
 		// 	});
 
-		let url_multiple = this.baseResource_Url + tablename + "?filter=(USER_GUID=" + id + ")";
+		let url_multiple = this.baseResource_Url + tablename + "?filter=(USER_GUID=" + id + ")AND(ROLE_FLAG=ADDITIONAL)";
+		console.log(url_multiple);
 
-        var queryHeaders = new Headers();
-        queryHeaders.append('Content-Type', 'application/json');
-        queryHeaders.append('X-Dreamfactory-API-Key', constants.DREAMFACTORY_API_KEY);
+		var queryHeaders = new Headers();
+		queryHeaders.append('Content-Type', 'application/json');
+		queryHeaders.append('X-Dreamfactory-API-Key', constants.DREAMFACTORY_API_KEY);
 
-        return this.httpService.http
-            .delete(url_multiple, { headers: queryHeaders })
-            .map((response) => {
-                var result: any = response.json();
+		return this.httpService.http
+			.delete(url_multiple, { headers: queryHeaders })
+			.map((response) => {
 				//return result.PAGE_GUID;
 				return response;
-            });
+			});
+	}
+
+	remove_multiple_records(id: string, tablename: string) {
+		let url_multiple = this.baseResource_Url + tablename + "?filter=(USER_GUID=" + id + ")";
+
+		var queryHeaders = new Headers();
+		queryHeaders.append('Content-Type', 'application/json');
+		queryHeaders.append('X-Dreamfactory-API-Key', constants.DREAMFACTORY_API_KEY);
+
+		return this.httpService.http
+			.delete(url_multiple, { headers: queryHeaders })
+			.map((response) => {
+				//return result.PAGE_GUID;
+				return response;
+			});
 	}
 
 	// get_bijay(id: string): Observable<ViewUser_Model> {

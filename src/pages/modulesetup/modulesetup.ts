@@ -1,9 +1,8 @@
 import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams, AlertController } from 'ionic-angular';
-import { TranslateService } from '@ngx-translate/core';
+import { IonicPage, NavController, NavParams, AlertController, LoadingController, Loading } from 'ionic-angular';
 
-import { FormControlDirective, FormBuilder, Validators, FormGroup, FormControl } from '@angular/forms';
-import { Http, Headers, RequestOptions, URLSearchParams } from '@angular/http';
+import { FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { Http, Headers, RequestOptions } from '@angular/http';
 import 'rxjs/add/operator/map';
 
 import * as constants from '../../app/config/constants';
@@ -37,7 +36,7 @@ export class ModulesetupPage {
 
   Moduleform: FormGroup;
   public pages: any;
-
+  public page: number = 1;
   //baseResourceUrl: string = constants.DREAMFACTORY_INSTANCE_URL + '/api/v2/zcs/_table/main_module' + '?api_key=' + constants.DREAMFACTORY_API_KEY;
   baseResourceUrl: string = constants.DREAMFACTORY_INSTANCE_URL + '/api/v2/zcs/_table/vw_mainmodule' + '?api_key=' + constants.DREAMFACTORY_API_KEY;
   baseResource_modulepage_Url: string = constants.DREAMFACTORY_INSTANCE_URL + '/api/v2/zcs/_table/vw_mainmodulepage' + '?api_key=' + constants.DREAMFACTORY_API_KEY;
@@ -61,12 +60,18 @@ export class ModulesetupPage {
   public NAME_ngModel_Add: any;
   public DESCRIPTION_ngModel_Add: any;
   public PAGE_ngModel_Add: any;
+  public Menu_Header_ngModel_Add: any;
+  public Menu_Icon_ngModel_Add: any;
+  public SlNo_ngModel_Add: any;
   //---------------------------------------------------------------------
 
   //Set the Model Name for edit------------------------------------------
   public NAME_ngModel_Edit: any;
   public DESCRIPTION_ngModel_Edit: any;
   public PAGE_ngModel_Edit: any;
+  public Menu_Header_ngModel_Edit: any;
+  public Menu_Icon_ngModel_Edit: any;
+  public SlNo_ngModel_Edit: any;
   //---------------------------------------------------------------------
   public Module_New: any = [];
   public Module_Page_Multiple: any = [];
@@ -77,7 +82,6 @@ export class ModulesetupPage {
   }
 
   public CloseModuleClick() {
-
     if (this.AddModuleClicked == true) {
       this.AddModuleClicked = false;
     }
@@ -87,11 +91,14 @@ export class ModulesetupPage {
   }
 
   public EditClick(MODULE_GUID: any) {
-
     //this.ClearControls();
     this.EditModuleClicked = true;
     var self = this;
 
+    this.loading = this.loadingCtrl.create({
+      content: 'Loading...',
+    });
+    this.loading.present();
     //------------Bind Controls-------------------------------------- 
     this.modulesetupservice
       .get(MODULE_GUID)
@@ -101,6 +108,9 @@ export class ModulesetupPage {
 
         this.DESCRIPTION_ngModel_Edit = self.module_details.DESCRIPTION;
         //this.PAGE_ngModel_Edit = self.module_details.PAGE_GUID; //console.log(self.module_details.PAGE_GUID);
+        this.Menu_Header_ngModel_Edit = self.module_details.MENU_HEADER;
+        this.Menu_Icon_ngModel_Edit = self.module_details.MENU_ICON;
+        this.SlNo_ngModel_Edit = self.module_details.MENU_SL_NO;
       });
 
     //-------------Bind Page Dropdownlist--------------------------
@@ -117,13 +127,14 @@ export class ModulesetupPage {
           CheckModulePage.push(this.modulepages[itemA]["PAGE_GUID"]);
         }
         this.PAGE_ngModel_Edit = CheckModulePage;
+        this.loading.dismissAll();
       });
   }
 
   public DeleteClick(MODULE_GUID: any) {
     let alert = this.alertCtrl.create({
       title: 'Remove Confirmation',
-      message: 'Do you want to remove ?',
+      message: 'Are you sure to remove?',
       buttons: [
         {
           text: 'Cancel',
@@ -149,15 +160,21 @@ export class ModulesetupPage {
             //Remove page details from main_modulepage----------------
             this.DeleteModulePage(MODULE_GUID);
 
-            this.navCtrl.setRoot(this.navCtrl.getActive().component);
+            // this.navCtrl.setRoot(this.navCtrl.getActive().component);
           }
         }
       ]
     }); alert.present();
   }
 
-  constructor(public navCtrl: NavController, public navParams: NavParams, fb: FormBuilder, public http: Http, private httpService: BaseHttpService, private modulesetupservice: ModuleSetup_Service, private modulepagesetupservice: ModulePageSetup_Service, private alertCtrl: AlertController) {
+  loading: Loading;
+  constructor(public navCtrl: NavController, public navParams: NavParams, fb: FormBuilder, public http: Http, private modulesetupservice: ModuleSetup_Service, private modulepagesetupservice: ModulePageSetup_Service, private alertCtrl: AlertController, private loadingCtrl: LoadingController) {
+
     if (localStorage.getItem("g_USER_GUID") == "sva") {
+      this.loading = this.loadingCtrl.create({
+        content: 'Loading...',
+      });
+      this.loading.present();
 
       //Bind Page Dropdownlist------------------
       this.GetPage();
@@ -186,21 +203,27 @@ export class ModulesetupPage {
                   }
                 }
               }
-              this.Module_New.push({ MODULE_GUID: data.resource[itemA]["MODULE_GUID"], MODULE_NAME: data.resource[itemA]["MOUDLE_NAME"], DESCRIPTION: data.resource[itemA]["DESCRIPTION"], PAGE_GUID: data.resource[itemA]["PAGE_GUID"], PAGE_NAME: this.strPage_Name });
+              this.Module_New.push({ MODULE_GUID: data.resource[itemA]["MODULE_GUID"], MODULE_NAME: data.resource[itemA]["MOUDLE_NAME"], DESCRIPTION: data.resource[itemA]["DESCRIPTION"], PAGE_GUID: data.resource[itemA]["PAGE_GUID"], PAGE_NAME: this.strPage_Name, MENU_HEADER: data.resource[itemA]["MENU_HEADER"], MENU_SL_NO: data.resource[itemA]["MENU_SL_NO"] });
             }
             Previous_MODULE_GUID = data.resource[itemA]["MODULE_GUID"];
           }
+          this.stores = this.Module_New;
+          this.loading.dismissAll();
         });
       //----------------------------------------
 
       this.Moduleform = fb.group({
-        NAME: ["", Validators.required],
-        DESCRIPTION: ["", Validators.required],
-        PAGE: ["", Validators.required]
+        //NAME: [null, Validators.required],
+        NAME: [null, Validators.compose([Validators.pattern('^[a-zA-Z0-9][a-zA-Z0-9!@#%$&()-`.+,/\"\\s]+$'), Validators.required])],
+        DESCRIPTION: [null],
+        PAGE: [null, Validators.required],
+        MENU_HEADER: [null, Validators.required],
+        MENU_ICON: [null, Validators.required],
+        MENU_SL_NO: [null, Validators.required]
       });
     }
     else {
-      alert("Sorry !! This is for only Super Admin.");
+      alert("Sorry. This is for only Super Admin.");
       this.navCtrl.push(LoginPage);
     }
   }
@@ -228,46 +251,50 @@ export class ModulesetupPage {
       this.http.get(url, options)
         .map(res => res.json())
         .subscribe(
-        data => {
-          let res = data["resource"];
-          if (res.length == 0) {
-            console.log("No records Found");
-            if (this.Exist_Record == false) {
+          data => {
+            let res = data["resource"];
+            if (res.length == 0) {
+              console.log("No records Found");
+              if (this.Exist_Record == false) {
 
-              this.module_entry.NAME = this.NAME_ngModel_Add.trim();
-              this.module_entry.DESCRIPTION = this.DESCRIPTION_ngModel_Add.trim();
-              this.module_entry.PAGE_GUID = this.PAGE_ngModel_Add[0];
-              this.module_entry.MODULE_GUID = UUID.UUID();
-              this.module_entry.CREATION_TS = new Date().toISOString();
-              this.module_entry.CREATION_USER_GUID = localStorage.getItem("g_USER_GUID");
-              this.module_entry.UPDATE_TS = new Date().toISOString();
-              this.module_entry.UPDATE_USER_GUID = "";
+                this.module_entry.NAME = this.NAME_ngModel_Add.trim();
+                this.module_entry.DESCRIPTION = this.DESCRIPTION_ngModel_Add.trim();
+                this.module_entry.PAGE_GUID = this.PAGE_ngModel_Add[0];
+                this.module_entry.MODULE_GUID = UUID.UUID();
+                this.module_entry.CREATION_TS = new Date().toISOString();
+                this.module_entry.CREATION_USER_GUID = localStorage.getItem("g_USER_GUID");
+                this.module_entry.UPDATE_TS = new Date().toISOString();
+                this.module_entry.UPDATE_USER_GUID = "";
+                this.module_entry.MENU_HEADER = this.Menu_Header_ngModel_Add;
 
-              this.modulesetupservice.save(this.module_entry)
-                .subscribe((response) => {
-                  if (response.status == 200) {
-                    this.SaveMoulePage(this.module_entry.MODULE_GUID);
+                this.module_entry.MENU_ICON = this.Menu_Icon_ngModel_Add;
+                this.module_entry.MENU_SL_NO = this.SlNo_ngModel_Add;
 
-                    alert('Module Registered successfully');
-                    //location.reload();
-                    this.navCtrl.setRoot(this.navCtrl.getActive().component);
-                  }
-                });
+                this.modulesetupservice.save(this.module_entry)
+                  .subscribe((response) => {
+                    if (response.status == 200) {
+                      this.SaveModulePage(this.module_entry.MODULE_GUID);
+
+                      alert('Module Registered successfully');
+                      //location.reload();
+                      // this.navCtrl.setRoot(this.navCtrl.getActive().component);
+                    }
+                  });
+              }
             }
-          }
-          else {
-            console.log("Records Found");
-            alert("This Module already Exist.")
-          }
-        },
-        err => {
-          this.Exist_Record = false;
-          console.log("ERROR!: ", err);
-        });
+            else {
+              console.log("Records Found");
+              alert("This Module already Exist.")
+            }
+          },
+          err => {
+            this.Exist_Record = false;
+            console.log("ERROR!: ", err);
+          });
     }
   }
 
-  SaveMoulePage(MODULE_GUID: any) {
+  SaveModulePage(MODULE_GUID: any) {
     for (var PAGE_GUID of this.PAGE_ngModel_Add) {
       this.modulepage_entry.ID = UUID.UUID();
       this.modulepage_entry.MODULE_GUID = MODULE_GUID;
@@ -279,12 +306,12 @@ export class ModulesetupPage {
       this.modulepagesetupservice.save(this.modulepage_entry)
         .subscribe((response) => {
           if (response.status == 200) {
-
-            this.navCtrl.setRoot(this.navCtrl.getActive().component);
           }
         });
     }
+    this.navCtrl.setRoot(this.navCtrl.getActive().component);
   }
+
   Update(MODULE_GUID: any) {
     if (this.Moduleform.valid) {
       if (this.module_entry.NAME == null) { this.module_entry.NAME = this.NAME_ngModel_Edit; }
@@ -297,6 +324,10 @@ export class ModulesetupPage {
       this.module_entry.MODULE_GUID = MODULE_GUID;
       this.module_entry.UPDATE_TS = new Date().toISOString();
       this.module_entry.UPDATE_USER_GUID = localStorage.getItem("g_USER_GUID");
+      this.module_entry.MENU_HEADER = this.Menu_Header_ngModel_Edit;
+
+      this.module_entry.MENU_ICON = this.Menu_Icon_ngModel_Edit;
+      this.module_entry.MENU_SL_NO = this.SlNo_ngModel_Edit;
 
       if (this.NAME_ngModel_Edit.trim() != localStorage.getItem('Prev_module_NAME')) {
         let url: string;
@@ -304,42 +335,42 @@ export class ModulesetupPage {
         this.http.get(url)
           .map(res => res.json())
           .subscribe(
-          data => {
-            let res = data["resource"];
-            //console.log('Current Name : ' + this.NAME_ngModel_Edit + ', Previous Name : ' + localStorage.getItem('Prev_module_NAME'));
-            if (res.length == 0) {
-              console.log("No records Found");
-              this.module_entry.NAME = this.NAME_ngModel_Edit.trim();
+            data => {
+              let res = data["resource"];
+              //console.log('Current Name : ' + this.NAME_ngModel_Edit + ', Previous Name : ' + localStorage.getItem('Prev_module_NAME'));
+              if (res.length == 0) {
+                console.log("No records Found");
+                this.module_entry.NAME = this.NAME_ngModel_Edit.trim();
 
-              //**************Update service if it is new details*************************
-              this.modulesetupservice.update(this.module_entry)
-                .subscribe((response) => {
-                  if (response.status == 200) {
+                //**************Update service if it is new details*************************
+                this.modulesetupservice.update(this.module_entry)
+                  .subscribe((response) => {
+                    if (response.status == 200) {
 
-                    //-------Delete Module Pages---------------- 
-                    this.DeleteModulePage(this.module_entry.MODULE_GUID);
+                      //-------Delete Module Pages---------------- 
+                      this.DeleteModulePage(this.module_entry.MODULE_GUID);
 
-                    //-------Update Module Pages----------------
-                    //this.UpdateMoulePage(this.module_entry.MODULE_GUID);
-                    this.UpdateMoulePageMultiple(this.module_entry.MODULE_GUID);
-                    //------------------------------------------
+                      //-------Update Module Pages----------------
+                      //this.UpdateModulePage(this.module_entry.MODULE_GUID);
+                      this.UpdateModulePageMultiple(this.module_entry.MODULE_GUID);
+                      //------------------------------------------
 
-                    // alert('Module updated successfully');
-                    // this.navCtrl.setRoot(this.navCtrl.getActive().component);
-                  }
-                });
-              //**************************************************************************
-            }
-            else {
-              console.log("Records Found");
-              alert("The Module is already Exist. ");
-            }
-          },
-          err => {
-            this.Exist_Record = false;
-            console.log("ERROR!: ", err);
+                      // alert('Module updated successfully');
+                      // this.navCtrl.setRoot(this.navCtrl.getActive().component);
+                    }
+                  });
+                //**************************************************************************
+              }
+              else {
+                console.log("Records Found");
+                alert("The Module is already Exist. ");
+              }
+            },
+            err => {
+              this.Exist_Record = false;
+              console.log("ERROR!: ", err);
 
-          });
+            });
       }
       else {
         if (this.module_entry.NAME == null) { this.module_entry.NAME = localStorage.getItem('Prev_module_NAME'); }
@@ -355,8 +386,8 @@ export class ModulesetupPage {
               this.DeleteModulePage(this.module_entry.MODULE_GUID);
 
               //-------Update Module Pages----------------
-              //this.UpdateMoulePage(this.module_entry.MODULE_GUID);
-              this.UpdateMoulePageMultiple(this.module_entry.MODULE_GUID);
+              //this.UpdateModulePage(this.module_entry.MODULE_GUID);
+              // this.UpdateModulePageMultiple(this.module_entry.MODULE_GUID);
               //------------------------------------------
 
               // alert('Module updated successfully');
@@ -373,11 +404,17 @@ export class ModulesetupPage {
         this.modulepages = this.modulepages.filter((item) => {
           return item.MODULE_GUID != MODULE_GUID;
         });
-        this.navCtrl.setRoot(this.navCtrl.getActive().component);
+        // this.navCtrl.setRoot(this.navCtrl.getActive().component);
+        if (this.EditModuleClicked == true) {
+          this.UpdateModulePageMultiple(this.module_entry.MODULE_GUID);
+        }
+        else {
+          this.navCtrl.setRoot(this.navCtrl.getActive().component);
+        }
       });
   }
 
-  UpdateMoulePage(MODULE_GUID: any) {
+  UpdateModulePage(MODULE_GUID: any) {
     //console.table(this.PAGE_ngModel_Edit);
     for (var PAGE_GUID of this.PAGE_ngModel_Edit) {
       this.modulepage_entry.ID = UUID.UUID();
@@ -399,7 +436,7 @@ export class ModulesetupPage {
     this.navCtrl.setRoot(this.navCtrl.getActive().component);
   }
 
-  UpdateMoulePageMultiple(MODULE_GUID: any) {
+  UpdateModulePageMultiple(MODULE_GUID: any) {
     //console.table(this.PAGE_ngModel_Edit);    
     for (var PAGE_GUID of this.PAGE_ngModel_Edit) {
       this.modulepage_entry.ID = UUID.UUID();
@@ -420,5 +457,66 @@ export class ModulesetupPage {
       });
     alert('Module updated successfully');
     this.navCtrl.setRoot(this.navCtrl.getActive().component);
+  }
+
+  stores: any[];
+  search(searchString: any) {
+    let val = searchString.target.value;
+    if (!val || !val.trim()) {
+      this.Module_New = this.stores;
+      return;
+    }
+    this.Module_New = this.filter({
+      MODULE_NAME: val,
+      DESCRIPTION: val,
+      PAGE_NAME: val,
+      MENU_HEADER: val
+    });
+  }
+
+  filter(params?: any) {
+    if (!params) {
+      return this.stores;
+    }
+
+    return this.stores.filter((item) => {
+      for (let key in params) {
+        let field = item[key];
+        if (typeof field == 'string' && field.toLowerCase().indexOf(params[key].toLowerCase()) >= 0) {
+          return item;
+        } else if (field == params[key]) {
+          return item;
+        }
+      }
+      return null;
+    });
+  }
+
+  DisplaySlNo() {
+    let slno_details: any;
+    let url: string = "";
+    if(this.EditModuleClicked == true){
+      url = constants.DREAMFACTORY_INSTANCE_URL + '/api/v2/zcs/_table/main_module' + '?filter=(MENU_HEADER='+ this.Menu_Header_ngModel_Edit +')&order=MENU_SL_NO DESC&api_key=' + constants.DREAMFACTORY_API_KEY;
+    }
+    else{
+      url = constants.DREAMFACTORY_INSTANCE_URL + '/api/v2/zcs/_table/main_module' + '?filter=(MENU_HEADER='+ this.Menu_Header_ngModel_Add +')&order=MENU_SL_NO DESC&api_key=' + constants.DREAMFACTORY_API_KEY;
+    }
+    this.http
+      .get(url)
+      .map(res => res.json())
+      .subscribe(data => {
+        slno_details = data["resource"]; 
+        if (slno_details.length == 0){
+          if(this.EditModuleClicked == true){ this.SlNo_ngModel_Edit = "1"; } else { this.SlNo_ngModel_Add = "1"; }
+        }
+        else{
+          if(slno_details[0]["MENU_SL_NO"] == undefined || slno_details[0]["MENU_SL_NO"] == null){
+            if(this.EditModuleClicked == true){ this.SlNo_ngModel_Edit = "1"; } else { this.SlNo_ngModel_Add = "1"; }
+          }
+          else{          
+            if(this.EditModuleClicked == true){ this.SlNo_ngModel_Edit = parseInt(slno_details[0]["MENU_SL_NO"]) + 1; } else { this.SlNo_ngModel_Add = parseInt(slno_details[0]["MENU_SL_NO"]) + 1; }
+          }
+        }        
+      });
   }
 }

@@ -6,6 +6,7 @@
 *.log
 *.tmp
 *.tmp.*
+*.zip
 log.txt
 *.sublime-project
 *.sublime-workspace
@@ -13,6 +14,7 @@ log.txt
 npm-debug.log*
 
 .idea/
+.sourcemaps/
 .sass-cache/
 .tmp/
 .versions/
@@ -33,3 +35,14 @@ Thumbs.db
 UserInterfaceState.xcuserstate
 
 www/build/
+www/assets/
+package-lock.json
+ionic.config.json
+.sourcemaps/main.js.map
+www/assets/data/data.json
+www/assets/img/appicon.png
+www/assets/img/ica-slidebox-img-1.png
+www/assets/img/ica-slidebox-img-2.png
+www/assets/img/ica-slidebox-img-3.png
+www/assets/img/ica-slidebox-img-4.png
+www/assets/img/noPreview.png

@@ -1,8 +1,8 @@
 {
-  "name": "eclaimconferencetest",
-  "app_id": "",
-  "type": "ionic-angular",
+  "name": "eclaim-desktop",
   "integrations": {
     "cordova": {}
-  }
+  },
+  "type": "ionic-angular",
+  "pro_id": "eclaim-desktop"
 }

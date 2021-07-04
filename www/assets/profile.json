@@ -4,12 +4,16 @@
           "level": [
             {
               "-id": "1",
-              "approver": { "-directManager": "1" },
+              "approver": {
+                "-directManager": "1"
+              },
               "conditions": {
                 "condition": [
                   {
                     "-status": "rejected",
-                    "nextlevel": { "-final": "false" }
+                    "nextlevel": {
+                      "-final": "false"
+                    }
                   },
                   {
                     "-status": "approved",
@@ -25,13 +29,15 @@
               "-id": "2",
               "approver": {
                 "-keytype": "userGUID",
-                "#text": "64e8da16-e008-b53e-9e00-eca107d35a75"
+                "#text": "8F53A864-4E03-48D5-80DC-C2D06D9D668D"
               },
               "conditions": {
                 "condition": [
                   {
                     "-status": "rejected",
-                    "nextlevel": { "-final": "false" }
+                    "nextlevel": {
+                      "-final": "false"
+                    }
                   },
                   {
                     "-status": "approved",
@@ -42,22 +48,26 @@
                   }
                 ]
               }
-            },
+            },           
             {
               "-id": "3",
               "approver": {
                 "-keytype": "userGUID",
-                "#text": "64e8da16-e008-b53e-9e00-eca107d35a75"
+                "#text": "365F284F-8947-493B-8E1F-60BD7291E816"
               },
               "conditions": {
                 "condition": [
                   {
                     "-status": "rejected",
-                    "nextlevel": { "-final": "false" }
+                    "nextlevel": {
+                      "-final": "false"
+                    }
                   },
                   {
                     "-status": "approved",
-                    "nextlevel": { "-final": "true" }
+                    "nextlevel": {
+                      "-final": "true"
+                    }
                   }
                 ]
               }
@@ -66,4 +76,3 @@
         }
       }
     }
-  

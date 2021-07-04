@@ -31,7 +31,7 @@ export class ProfileSetupPage {
   profile_entry: Main_Profile_Model = new Main_Profile_Model();
   Profileform: FormGroup;
   current_profileGUID: string = '';
-
+  public page:number = 1;
   baseResourceUrl: string = constants.DREAMFACTORY_INSTANCE_URL + '/api/v2/zcs/_table/main_profile' + '?api_key=' + constants.DREAMFACTORY_API_KEY;
   baseResource_Url: string = constants.DREAMFACTORY_INSTANCE_URL + '/api/v2/zcs/_table/';
 
@@ -109,7 +109,7 @@ export class ProfileSetupPage {
     console.log(MAIN_PROFILE_GUID);
     let alert = this.alertCtrl.create({
       title: 'Remove Confirmation',
-      message: 'Do you want to remove ?',
+      message: 'Are you sure to remove?',
       buttons: [
         {
           text: 'Cancel',
@@ -157,8 +157,8 @@ export class ProfileSetupPage {
                 this.profile_entry.PROFILE_NAME = this.PROFILENAME_ngModel_Add.trim();
                 this.profile_entry.PROFILE_XML = this.XML_ngModel_Add.trim();
                 this.profile_entry.MAIN_PROFILE_GUID = UUID.UUID();
-                this.profile_entry.TENANT_GUID = UUID.UUID();
-                this.profile_entry.TENANT_SITE_GUID = UUID.UUID();
+                this.profile_entry.TENANT_GUID = localStorage.getItem("g_TENANT_GUID");
+                this.profile_entry.TENANT_SITE_GUID = localStorage.getItem("g_TENANT_COMPANY_GUID");
                 this.profile_entry.CREATION_TS = new Date().toISOString();
                 this.profile_entry.CREATION_USER_GUID = '1';
                 this.profile_entry.UPDATE_TS = new Date().toISOString();

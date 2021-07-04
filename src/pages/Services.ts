@@ -1,7 +1,6 @@
-import * as constants from '../config/constants';
-import { Component } from '@angular/core';
+import * as constants from '../app/config/constants';
 import { Observable } from 'rxjs/Observable';
-import { Http, Headers, RequestOptions, URLSearchParams } from '@angular/http';
+import { Http, Headers, RequestOptions } from '@angular/http';
 import { Injectable } from '@angular/core';
 
 @Injectable()
@@ -10,6 +9,8 @@ export class Services {
   constructor(public http:Http) {
 
   }
+
+
   static getUrl(table: string, args?: string) {
     if (args != null) {
       return constants.DREAMFACTORY_TABLE_URL + '/' + table + '?' + args + '&api_key=' + constants.DREAMFACTORY_API_KEY;

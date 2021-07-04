@@ -1,96 +1,87 @@
 ﻿<ion-split-pane>
 
-  <!-- logged out menu -->
-  <ion-menu id="loggedOutMenu" [content]="content">
+  <ion-menu id="loggedInMenu_User" [content]="content" *ngIf="blnLogin">
+    <ion-header>
+      <ion-toolbar color="primary200">
+        <div style="height:141px;margin-top:-15pt;color:white;" text-center>
+          <h3 style="padding-top:15pt;">Welcome to eClaim</h3>
 
- <ion-header>
-      <ion-toolbar>
-        <ion-title>eClaim</ion-title>
-      </ion-toolbar>
-    </ion-header> 
+          <div style="width: 30%;float: left;margin-left: 5pt;">
+            <div class="profilepicapp">
+              <img src={{IMAGE_URL}} alt="avatar">
+            </div>
+          </div>
 
-    <!-- <ion-header>
-      <ion-navbar>
-        <div class="headerInfo">
-          <ion-fab top left>
-            <button ion-fab mini class="btnClear">
-              <ion-icon name="settings"></ion-icon>
-            </button>
-            <ion-fab-list class="settingBtnFab" side="right">
-              <button ion-fab class="bgColor-green" [class.menuHide]="translateToMalayClicked" (click)="translateToMalay()">ML</button>
-              <button ion-fab class="bgColor-green" [class.menuHide]="translateToEnglishClicked" (click)="translateToEnglish()">ENG</button>
-            </ion-fab-list>
-          </ion-fab>
+          <div style="color: white;">
+            <h6 text-center text-wrap>{{ USER_NAME_LABEL }}</h6>
+          </div>
+
         </div>
-      </ion-navbar>
-    </ion-header> -->
-
-    <!-- <ion-nav [root]="rootPage"></ion-nav> -->
+      </ion-toolbar>
+    </ion-header>
 
     <ion-content class="outer-content">
+      <ion-list *ngIf="blnDashboard_loggedInMenu_User">
 
-      <ion-list>
-        <ion-list-header>
-          {{"NAVIGATE_LABEL" | translate}}
-        </ion-list-header>
-        
-        <button ion-item menuClose *ngFor="let p of appPages" (click)="openPage(p)">
-          <ion-icon item-start [name]=" p.icon " [color]="isActive(p) "></ion-icon>
-          {{p.title}}
-        </button>
-      </ion-list> 
-
-      <ion-list>
-        <ion-list-header>
-          ACCOUNT
-        </ion-list-header>
-        <button ion-item menuClose *ngFor="let p of loggedOutPages " (click)="openPage(p) ">
-          <ion-icon item-start [name]="p.icon " [color]="isActive(p) "></ion-icon>
+        <button ion-item menuClose *ngFor="let p of appPages" (click)="openPage(p)" [color]="isActive(p) ">
+          <ion-icon item-start [name]=" p.icon "></ion-icon>
           {{p.title}}
         </button>
       </ion-list>
 
+      <ion-list *ngIf="blnTasks_loggedInMenu_User">
+        <ion-list-header>
+          Tasks
+        </ion-list-header>
+
+        <button ion-item menuClose *ngFor="let p of appPages_User" (click)="openPage(p)" [color]="isActive(p) ">
+          <ion-icon item-start [name]=" p.icon "></ion-icon>
+          {{p.title}}
+        </button>
+      </ion-list>
+
+      <ion-list *ngIf="blnClaims_loggedInMenu_User">
+        <ion-list-header>
+          {{"CLAIMS_LABEL" | translate}}
+        </ion-list-header>
+
+        <button ion-item menuClose *ngFor="let p of claimPages " (click)="openPage(p) " [color]="isActive(p) ">
+          <ion-icon item-start [name]="p.icon " title="{{p.title}}"></ion-icon>
+          {{p.title}}
+        </button>
+      </ion-list>
+
+      <ion-list *ngIf="blnReport_loggedInMenu_User">
+        <ion-list-header>
+          Reports
+        </ion-list-header>
+
+        <button ion-item menuClose *ngFor="let p of reportPages " (click)="openPage(p) " [color]="isActive(p) ">
+          <ion-icon item-start [name]="p.icon "></ion-icon>
+          {{p.title}}
+        </button>
+      </ion-list>
+
+      <ion-list *ngIf="blnSetup_loggedInMenu_User" class="hiset">
+        <button ion-item menuClose *ngFor="let p of setupsPages " (click)="openPage(p) " [color]="isActive(p) ">
+          <ion-icon item-start [name]="p.icon "></ion-icon>
+          {{p.title}}
+        </button>
+      </ion-list>
+
+      <ion-list *ngIf="blnAccount_loggedInMenu_User">
+        <ion-list-header>
+          {{"Account_LABEL" | translate}}
+        </ion-list-header>
+        <button ion-item menuClose *ngFor="let p of loggedInPages " (click)="openPage(p) " [color]="isActive(p) ">
+          <ion-icon item-start [name]="p.icon "></ion-icon>
+          {{p.title}}
+        </button>
+      </ion-list>
 
     </ion-content>
 
   </ion-menu>
-
-<!-- logged in menu -->
-  <ion-menu id="loggedInMenu" [content]="content">
-    
-        <ion-header>
-          <ion-toolbar>
-            <ion-title>eClaim</ion-title>
-          </ion-toolbar>
-        </ion-header>
-    
-        <ion-content class="outer-content">
-    
-          <ion-list>
-            <ion-list-header>
-              Navigate
-            </ion-list-header>
-            
-            <button ion-item menuClose *ngFor="let p of appPages" (click)="openPage(p)">
-              <ion-icon item-start [name]=" p.icon " [color]="isActive(p) "></ion-icon>
-              {{p.title}}
-            </button>
-          </ion-list> 
-    
-          <ion-list>
-            <ion-list-header>
-              Account
-            </ion-list-header>
-            <button ion-item menuClose *ngFor="let p of loggedInPages " (click)="openPage(p) ">
-              <ion-icon item-start [name]="p.icon " [color]="isActive(p) "></ion-icon>
-              {{p.title}}
-            </button>
-          </ion-list>
-    
-    
-        </ion-content>
-    
-      </ion-menu>
 
   <!-- main navigation -->
   <ion-nav [root]="rootPage" #content swipeBackEnabled="false" main></ion-nav>
